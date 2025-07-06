@@ -5,7 +5,7 @@ A simple FiveM drilling minigame by Code Wizards featuring three types of miniga
 ## 📝 Table of Contents
 
 - [Features](#feature_scope)
-- [WIKI]()
+- [WIKI](https://code-wizards.gitbook.io/codewizards/drilling-system/)
 - [Authors](#authors)
 - [Support](#support)
 - [License](#license)
