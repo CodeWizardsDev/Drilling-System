@@ -18,7 +18,12 @@ local function StartDrilling(callback)
     local success = false
     local modelHash = RequestProp(Config.DrillMinigame.Model)
     local playerPed = PlayerPedId()
-    
+
+    -- Cooldown variables for drill key spam prevention
+    local keyCooldownActive = false
+    local keyCooldownDuration = Config.DrillMinigame.CooldownDuration * 1000 -- cooldown duration in milliseconds
+    local keyCooldownTimer = 0
+
     -- Create and attach the drill
     local DrillProp = CreateObject(modelHash, 1.0, 1.0, 1.0, true, true, false)
     SetCurrentPedWeapon(playerPed, GetHashKey("WEAPON_UNARMED"), true)
@@ -51,16 +56,21 @@ local function StartDrilling(callback)
             DisableControlAction(0, control, true)
         end
         DrawScaleformMovie(scaleform, 0.65, 0.5, 0.7, 0.7, 0.5, 255, 255, 255, 255, 0)
-        
-        if IsControlPressed(0, Config.DrillMinigame.Key) then
-            speed = math.min(speed + 0.1, Config.DrillMinigame.MaxSpeed)
-            if not soundPlaying then
-                LS()
-                soundId = GetSoundId()
-                PlaySoundFromEntity(soundId, "Drill", DrillProp, "DLC_HEIST_FLEECA_SOUNDSET", 1, 0)
-                if Config.DrillMinigame.ShakeCam then ShakeGameplayCam("SKY_DIVING_SHAKE", Config.DrillMinigame.ShakeInt) end
-                soundPlaying = true
-            end  
+
+        local currentTime = GetGameTimer()
+        local isKeyPressed = IsControlPressed(0, Config.DrillMinigame.Key)
+
+        if isKeyPressed then
+            if not keyCooldownActive then
+                speed = math.min(speed + 0.1, Config.DrillMinigame.MaxSpeed)
+                if not soundPlaying then
+                    LS()
+                    soundId = GetSoundId()
+                    PlaySoundFromEntity(soundId, "Drill", DrillProp, "DLC_HEIST_FLEECA_SOUNDSET", 1, 0)
+                    if Config.DrillMinigame.ShakeCam then ShakeGameplayCam("SKY_DIVING_SHAKE", Config.DrillMinigame.ShakeInt) end
+                    soundPlaying = true
+                end
+            end
         else
             speed = math.max(0.0, speed - 0.1)
             if soundPlaying then
@@ -69,8 +79,19 @@ local function StartDrilling(callback)
                 StopGameplayCamShaking(true)
                 soundPlaying = false
             end
+            -- Start cooldown timer on key release
+            if not keyCooldownActive then
+                keyCooldownActive = true
+                keyCooldownTimer = currentTime + keyCooldownDuration
+            end
         end
-        temperature = temperature + (speed * 0.1)
+
+        -- Check if cooldown timer expired
+        if keyCooldownActive and currentTime >= keyCooldownTimer then
+            keyCooldownActive = false
+        end
+
+        temperature = temperature + (speed * Config.DrillMinigame.HeatUpMultiplier)
         if not IsControlPressed(0, 172) then
             temperature = math.max(0.0, temperature - Config.DrillMinigame.CooldownRate)
         end
@@ -102,7 +123,12 @@ local function StartVault(numdis, callback)
     local scaleform = LoadScaleForm("VAULT_DRILL")
     local modelHash = RequestProp(Config.VaultMinigame.Model)
     local playerPed = PlayerPedId()
-    
+
+    -- Cooldown variables for vault drill key spam prevention
+    local keyCooldownActive = false
+    local keyCooldownDuration = Config.VaultMinigame.CooldownDuration * 1000 -- cooldown duration in milliseconds
+    local keyCooldownTimer = 0
+
     -- Create and attach the vault drill prop
     local DrillProp2 = CreateObject(modelHash, 1.0, 1.0, 1.0, true, true, false)
     SetCurrentPedWeapon(playerPed, GetHashKey("WEAPON_UNARMED"), true)
@@ -143,16 +169,22 @@ local function StartVault(numdis, callback)
             DisableControlAction(0, control, true)
         end
         DrawScaleformMovie(scaleform, 0.65, 0.5, 0.7, 0.7, 255, 255, 255, 255, 0)
+
+        local currentTime = GetGameTimer()
+        local isKeyPressed = IsControlPressed(0, Config.VaultMinigame.Key)
+
         -- Update drill parameters
-        if IsControlPressed(0, Config.VaultMinigame.Key) then
-            speed = math.min(speed + 0.1, Config.VaultMinigame.MaxSpeed)
-            if not soundPlaying then
-                LS()
-                soundId = GetSoundId()
-                PlaySoundFromEntity(soundId, "Drill", DrillProp2, "DLC_HEIST_FLEECA_SOUNDSET", 1, 0)
-                if Config.VaultMinigame.ShakeCam then ShakeGameplayCam("SKY_DIVING_SHAKE", Config.VaultMinigame.ShakeInt) end
-                soundPlaying = true
-            end  
+        if isKeyPressed then
+            if not keyCooldownActive then
+                speed = math.min(speed + 0.1, Config.VaultMinigame.MaxSpeed)
+                if not soundPlaying then
+                    LS()
+                    soundId = GetSoundId()
+                    PlaySoundFromEntity(soundId, "Drill", DrillProp2, "DLC_HEIST_FLEECA_SOUNDSET", 1, 0)
+                    if Config.VaultMinigame.ShakeCam then ShakeGameplayCam("SKY_DIVING_SHAKE", Config.VaultMinigame.ShakeInt) end
+                    soundPlaying = true
+                end
+            end
         else
             speed = math.max(speed - 0.1, 0.0)
             if soundPlaying then
@@ -161,33 +193,43 @@ local function StartVault(numdis, callback)
                 StopGameplayCamShaking(true)
                 soundPlaying = false
             end
+            -- Start cooldown timer on key release
+            if not keyCooldownActive then
+                keyCooldownActive = true
+                keyCooldownTimer = currentTime + keyCooldownDuration
+            end
         end
-        
+
+        -- Check if cooldown timer expired
+        if keyCooldownActive and currentTime >= keyCooldownTimer then
+            keyCooldownActive = false
+        end
+
         -- Calculate temperature based on speed
         if speed > 0.4 then
-            temperature = temperature + (speed * 0.01)
+            temperature = temperature + (speed * Config.VaultMinigame.HeatUpMultiplier)
         else
             temperature = math.max(0.0, temperature - Config.VaultMinigame.CooldownRate)
         end
-        
+
         -- Update position if not overheated
         if temperature < Config.VaultMinigame.MaxTemp then
             position = position + (speed * 0.001)
         end
-        
+
         -- Update scaleform
         BeginScaleformMovieMethod(scaleform, "SET_SPEED")
         ScaleformMovieMethodAddParamFloat(speed)
         EndScaleformMovieMethod()
-        
+
         BeginScaleformMovieMethod(scaleform, "SET_TEMPERATURE")
         ScaleformMovieMethodAddParamFloat(temperature)
         EndScaleformMovieMethod()
-        
+
         BeginScaleformMovieMethod(scaleform, "SET_DRILL_POSITION")
         ScaleformMovieMethodAddParamFloat(position)
         EndScaleformMovieMethod()
-        
+
         -- Check for completion or failure
         if position >= 1.0 then
             cleanup()
@@ -208,7 +250,12 @@ local function StartLaser(numdis, callback)
     local scaleform = LoadScaleForm("VAULT_LASER")
     local modelHash = RequestProp(Config.LaserMinigame.Model)
     local playerPed = PlayerPedId()
-    
+
+    -- Cooldown variables for laser key spam prevention
+    local keyCooldownActive = false
+    local keyCooldownDuration = Config.LaserMinigame.CooldownDuration * 1000 -- cooldown duration in milliseconds
+    local keyCooldownTimer = 0
+
     -- Create and attach the laser prop
     local LaserProp = CreateObject(modelHash, 1.0, 1.0, 1.0, true, true, false)
     SetCurrentPedWeapon(playerPed, GetHashKey("WEAPON_UNARMED"), true)
@@ -247,40 +294,56 @@ local function StartLaser(numdis, callback)
             DisableControlAction(0, control, true)
         end
         DrawScaleformMovie(scaleform, 0.65, 0.5, 0.7, 0.7, 255, 255, 255, 255, 0)
+
+        local currentTime = GetGameTimer()
+        local isKeyPressed = IsControlPressed(0, Config.LaserMinigame.Key)
+
         -- Update drill parameters
-        if IsControlPressed(0, Config.LaserMinigame.Key) then
-            speed = math.min(speed + 0.1, Config.LaserMinigame.MaxSpeed)
-            if Config.LaserMinigame.ShakeCam then ShakeGameplayCam("SKY_DIVING_SHAKE", Config.LaserMinigame.ShakeInt) end
+        if isKeyPressed then
+            if not keyCooldownActive then
+                speed = math.min(speed + 0.1, Config.LaserMinigame.MaxSpeed)
+                if Config.LaserMinigame.ShakeCam then ShakeGameplayCam("SKY_DIVING_SHAKE", Config.LaserMinigame.ShakeInt) end
+            end
         else
             speed = math.max(speed - 0.1, 0.0)
             StopGameplayCamShaking(true)
+            -- Start cooldown timer on key release
+            if not keyCooldownActive then
+                keyCooldownActive = true
+                keyCooldownTimer = currentTime + keyCooldownDuration
+            end
         end
-        
+
+        -- Check if cooldown timer expired
+        if keyCooldownActive and currentTime >= keyCooldownTimer then
+            keyCooldownActive = false
+        end
+
         -- Calculate temperature based on speed
         if speed > 0.4 then
-            temperature = temperature + (speed * 0.004)
+            temperature = temperature + (speed * Config.LaserMinigame.HeatUpMultiplier)
         else
             temperature = math.max(0.0, temperature - Config.LaserMinigame.CooldownRate)
         end
-        
+
         -- Update position if not overheated
         if temperature < Config.LaserMinigame.MaxTemp then
             position = position + (speed * 0.001)
         end
-        
+
         -- Update scaleform
         BeginScaleformMovieMethod(scaleform, "SET_SPEED")
         ScaleformMovieMethodAddParamFloat(speed)
         EndScaleformMovieMethod()
-        
+
         BeginScaleformMovieMethod(scaleform, "SET_TEMPERATURE")
         ScaleformMovieMethodAddParamFloat(temperature)
         EndScaleformMovieMethod()
-        
+
         BeginScaleformMovieMethod(scaleform, "SET_DRILL_POSITION")
         ScaleformMovieMethodAddParamFloat(position)
         EndScaleformMovieMethod()
-        
+
         -- Check for completion or failure
         if position >= 1.0 then
             cleanup()

@@ -60,8 +60,11 @@ Config.DrillMinigame = {
     AnimDict = "anim@heists@fleeca_bank@drilling", -- Animation dictionary for the drill minigame
     Animation = "drill_straight_idle",             -- Animation for the drill minigame
 
-    MaxSpeed = 0.3,                        -- Maximum speed allowed in the drill minigame
+    CooldownDuration = 1,                  -- Time required for players to hold the keys to start drilling (in seconds)
+
+    MaxSpeed = 0.1,                        -- Maximum speed allowed in the drill minigame
     MaxTemp = 1.0,                         -- Maximum temperature before overheating
+    HeatUpMultiplier = 0.05,               -- Multiplier for heat increase
     CooldownRate = 0.01,                   -- Rate at which the drill cools down
 
     ShakeCam = true,                       -- Enable camera shake while drilling
@@ -77,8 +80,11 @@ Config.VaultMinigame = {
     AnimDict = "anim@heists@fleeca_bank@drilling", -- Animation dictionary for the drill minigame
     Animation = "drill_straight_idle",             -- Animation for the drill minigame
 
+    CooldownDuration = 1,                  -- Time required for players to hold the keys to start drilling (in seconds)
+
     MaxSpeed = 0.7,                        -- Maximum speed allowed in the vault drill minigame
     MaxTemp = 1.0,                         -- Maximum temperature before overheating
+    HeatUpMultiplier = 0.01,               -- Multiplier for heat increase
     CooldownRate = 0.01,                   -- Rate at which the vault mechanism cools down
 
     ShakeCam = true,                       -- Enable camera shake while drilling
@@ -93,9 +99,12 @@ Config.LaserMinigame = {
 
     AnimDict = "anim@heists@fleeca_bank@drilling", -- Animation dictionary for the drill minigame
     Animation = "drill_straight_idle",             -- Animation for the drill minigame
+
+    CooldownDuration = 1,                  -- Time required for players to hold the keys to start the laser (in seconds)
     
     MaxSpeed = 2.5,                        -- Maximum speed allowed in the laser minigame
     MaxTemp = 1.0,                         -- Maximum temperature before overheating
+    HeatUpMultiplier = 0.004,              -- Multiplier for heat increase
     CooldownRate = 0.01,                   -- Rate at which the laser cools down
 
     ShakeCam = false,                      -- Enable camera shake while using laser

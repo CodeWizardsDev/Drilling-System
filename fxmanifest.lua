@@ -4,7 +4,7 @@ games { 'gta5' }
 author 'The_Hs5'
 
 description 'Simple fivem drilling minigame by Code Wizards'
-version '1.0.0'
+version '1.1.0'
 
 depencies {'wizard-lib', 'ox_lib'}
 
